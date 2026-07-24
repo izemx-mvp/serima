@@ -1,11 +1,10 @@
 import logoUrl from "@/assets/serima-logo-wordmark.png";
-import markAsset from "@/assets/serima-mark.png.asset.json";
 import { useTheme } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
 
 /**
- * Sérima official wordmark (extracted from serima.ma).
- * Use variant="mark" (square S) for collapsed sidebars/favicons; default is the full wordmark.
+ * Sérima official wordmark.
+ * Use variant="mark" (square S crop) for collapsed sidebars/favicons; default is the full wordmark.
  */
 export function SerimaLogo({
   className,
@@ -20,15 +19,17 @@ export function SerimaLogo({
 }) {
   const { resolved } = useTheme();
   const dark = forceDark ?? resolved === "dark";
-  const src = variant === "mark" ? markAsset.url : logoUrl;
+  const isMark = variant === "mark";
+
   return (
     <img
-      src={src}
+      src={logoUrl}
       alt="Sérima"
       height={height}
-      style={{ height, width: "auto" }}
+      style={{ height, width: isMark ? height : "auto" }}
       className={cn(
         "select-none transition-[filter] duration-300",
+        isMark && "object-cover object-left",
         dark && "brightness-125 saturate-150",
         className,
       )}

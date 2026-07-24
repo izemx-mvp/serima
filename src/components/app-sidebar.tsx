@@ -103,13 +103,16 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border/60">
-      <SidebarHeader className="border-b border-sidebar-border/60 h-16 px-3">
-        <Link to="/" className="flex items-center justify-center h-full min-w-0 group">
-          <div className="flex items-center justify-center h-full transition-transform group-hover:scale-[1.02]">
+      <SidebarHeader className="border-b border-sidebar-border/60 h-16 px-3 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:overflow-hidden">
+        <Link
+          to="/"
+          className="flex items-center justify-center h-full min-w-0 overflow-hidden group-data-[collapsible=icon]:w-full"
+        >
+          <div className="flex items-center justify-center min-w-0 transition-transform group-hover:scale-[1.02]">
             {collapsed ? (
-              <SerimaLogo variant="mark" height={26} />
+              <SerimaLogo variant="mark" height={28} className="shrink-0" />
             ) : (
-              <SerimaLogo height={30} />
+              <SerimaLogo height={30} className="max-w-full" />
             )}
           </div>
         </Link>
