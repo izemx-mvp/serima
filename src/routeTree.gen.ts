@@ -15,6 +15,7 @@ import { Route as ReclamationsRouteImport } from './routes/reclamations'
 import { Route as DocumentsRouteImport } from './routes/documents'
 import { Route as DevisRouteImport } from './routes/devis'
 import { Route as DemandesRouteImport } from './routes/demandes'
+import { Route as ConfigurationRouteImport } from './routes/configuration'
 import { Route as CommandesRouteImport } from './routes/commandes'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AgentsIndexRouteImport } from './routes/agents.index'
@@ -50,6 +51,11 @@ const DemandesRoute = DemandesRouteImport.update({
   path: '/demandes',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ConfigurationRoute = ConfigurationRouteImport.update({
+  id: '/configuration',
+  path: '/configuration',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CommandesRoute = CommandesRouteImport.update({
   id: '/commandes',
   path: '/commandes',
@@ -74,6 +80,7 @@ const AgentsIdRoute = AgentsIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/commandes': typeof CommandesRoute
+  '/configuration': typeof ConfigurationRoute
   '/demandes': typeof DemandesRoute
   '/devis': typeof DevisRoute
   '/documents': typeof DocumentsRoute
@@ -86,6 +93,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/commandes': typeof CommandesRoute
+  '/configuration': typeof ConfigurationRoute
   '/demandes': typeof DemandesRoute
   '/devis': typeof DevisRoute
   '/documents': typeof DocumentsRoute
@@ -99,6 +107,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/commandes': typeof CommandesRoute
+  '/configuration': typeof ConfigurationRoute
   '/demandes': typeof DemandesRoute
   '/devis': typeof DevisRoute
   '/documents': typeof DocumentsRoute
@@ -113,6 +122,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/commandes'
+    | '/configuration'
     | '/demandes'
     | '/devis'
     | '/documents'
@@ -125,6 +135,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/commandes'
+    | '/configuration'
     | '/demandes'
     | '/devis'
     | '/documents'
@@ -137,6 +148,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/commandes'
+    | '/configuration'
     | '/demandes'
     | '/devis'
     | '/documents'
@@ -150,6 +162,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CommandesRoute: typeof CommandesRoute
+  ConfigurationRoute: typeof ConfigurationRoute
   DemandesRoute: typeof DemandesRoute
   DevisRoute: typeof DevisRoute
   DocumentsRoute: typeof DocumentsRoute
@@ -204,6 +217,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DemandesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/configuration': {
+      id: '/configuration'
+      path: '/configuration'
+      fullPath: '/configuration'
+      preLoaderRoute: typeof ConfigurationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/commandes': {
       id: '/commandes'
       path: '/commandes'
@@ -238,6 +258,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CommandesRoute: CommandesRoute,
+  ConfigurationRoute: ConfigurationRoute,
   DemandesRoute: DemandesRoute,
   DevisRoute: DevisRoute,
   DocumentsRoute: DocumentsRoute,
