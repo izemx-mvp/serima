@@ -12,12 +12,12 @@ function getSystem(): "light" | "dark" {
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("system");
+  const [theme, setThemeState] = useState<Theme>("light");
   const [resolved, setResolved] = useState<"light" | "dark">("light");
 
   useEffect(() => {
     const saved = (typeof localStorage !== "undefined" && localStorage.getItem(STORAGE_KEY)) as Theme | null;
-    const initial: Theme = saved ?? "system";
+    const initial: Theme = saved ?? "light";
     setThemeState(initial);
   }, []);
 
