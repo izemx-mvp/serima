@@ -269,3 +269,47 @@
   background: color-mix(in oklab, var(--muted-foreground) 50%, transparent);
   background-clip: padding-box;
 }
+
+/* Backoffice canvas — layered ambient background */
+.app-canvas {
+  background-color: var(--background);
+}
+.app-canvas-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  background-image:
+    radial-gradient(ellipse 60% 40% at 15% 0%,
+      color-mix(in oklab, var(--primary) 10%, transparent) 0%,
+      transparent 60%),
+    radial-gradient(ellipse 50% 40% at 90% 10%,
+      color-mix(in oklab, var(--chart-2) 8%, transparent) 0%,
+      transparent 55%),
+    radial-gradient(ellipse 80% 50% at 50% 100%,
+      color-mix(in oklab, var(--primary) 5%, transparent) 0%,
+      transparent 60%),
+    linear-gradient(180deg,
+      color-mix(in oklab, var(--background) 100%, transparent) 0%,
+      color-mix(in oklab, var(--muted) 60%, var(--background)) 100%);
+}
+.app-canvas-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right,
+      color-mix(in oklab, var(--foreground) 5%, transparent) 1px,
+      transparent 1px),
+    linear-gradient(to bottom,
+      color-mix(in oklab, var(--foreground) 5%, transparent) 1px,
+      transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse 90% 60% at 50% 0%, black 0%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse 90% 60% at 50% 0%, black 0%, transparent 75%);
+  opacity: 0.5;
+}
+.dark .app-canvas-bg::before {
+  opacity: 0.35;
+}
