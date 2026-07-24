@@ -1,0 +1,238 @@
+# MVP Lovable → Docker Hub → Kubernetes
+# Client repos only need: include (see .gitlab-ci.include.yml)
+
+workflow:
+  rules:
+    - if: $CI_PROJECT_PATH == "izemx/client/mvp/Templates"
+      when: never
+    - when: always
+
+stages:
+  - prepare
+  - build-publish
+  - deploy
+  - dns
+  - notify
+
+variables:
+  DOCKER_REGISTRY: "docker.io"
+  # Docker Hub namespace the image is pushed under. Override per project with a
+  # DOCKER_NAMESPACE CI/CD variable if a different account/org should own the image.
+  DOCKER_NAMESPACE: "marketingconfort"
+  APP_NAME: "${DOCKER_NAMESPACE}/${CI_PROJECT_NAME}"
+  SLUG: $CI_PROJECT_NAME
+  KUBE_NAMESPACE: mvp-lab
+  DOMAIN: izemxlab.com
+  CLUSTER_ISSUER: "letsencrypt-prod"
+  MVP_TEMPLATE_PROJECT: "izemx/client/mvp/Templates"
+  MVP_TEMPLATE_REF: "develop"
+  MVP_SERVER_IP: "187.124.12.100"
+  HOSTINGER_DNS_ZONE: "izemxlab.com"
+
+# --- clone mvp-template + version (no manual copy) ---
+
+prepare:
+  stage: prepare
+  image: alpine:3.20
+  before_script:
+    - apk add --no-cache git jq
+  script:
+    - echo "Fetching deploy template from ${MVP_TEMPLATE_PROJECT}..."
+    - git clone --depth 1 --branch "${MVP_TEMPLATE_REF}"
+        "https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${MVP_TEMPLATE_PROJECT}.git"
+        /tmp/mvp-template
+    - cp /tmp/mvp-template/Dockerfile .
+    - cp /tmp/mvp-template/nginx.conf .
+    - cp /tmp/mvp-template/vite.config.docker.ts .
+    - cp /tmp/mvp-template/.dockerignore .
+    - cp -r /tmp/mvp-template/k8s ./k8s
+    - |
+      if [ ! -f package.json ]; then
+        echo "ERROR: package.json missing. Connect Lovable to this repo first."
+        exit 1
+      fi
+      if ! jq -e '.scripts["build:docker"]' package.json >/dev/null 2>&1; then
+        echo "Adding build:docker script to package.json..."
+        jq '.scripts["build:docker"] = "vite build --config vite.config.docker.ts"' package.json > package.json.tmp
+        mv package.json.tmp package.json
+      fi
+    - VERSION=$(jq -r '.version // "0.1.0"' package.json)
+    - echo "VERSION=${VERSION}" >> version.env
+    - echo "Template ready for ${SLUG}"
+  artifacts:
+    paths:
+      - Dockerfile
+      - nginx.conf
+      - vite.config.docker.ts
+      - .dockerignore
+      - k8s/
+      - package.json
+    reports:
+      dotenv: version.env
+    expire_in: 1 hour
+
+# --- Kaniko build (same as Izemx) ---
+
+.build_publish_template:
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  variables:
+    DOCKER_REGISTRY: "docker.io"
+    # GitLab Runner auto-injects the DOCKER_AUTH_CONFIG CI/CD variable into
+    # this path as a read-only config.json (same proven Izemx pattern).
+    DOCKER_CONFIG: "/kaniko/.docker"
+  stage: build-publish
+  script:
+    - |
+      if [ -z "$VERSION" ]; then
+        echo "No VERSION found. prepare job must run first."
+        exit 1
+      fi
+      echo "VERSION: $VERSION"
+      CURRENT_VERSION="$VERSION"
+      MAJOR=$(echo $CURRENT_VERSION | cut -d. -f1)
+      MINOR=$(echo $CURRENT_VERSION | cut -d. -f2)
+      PATCH=$(echo $CURRENT_VERSION | cut -d. -f3)
+      if [ "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" == "develop" ]; then
+        NEW_PATCH=$((PATCH + 1))
+        NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"
+      elif [ "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" == "staging" ]; then
+        NEW_MINOR=$((MINOR + 1))
+        NEW_VERSION="$MAJOR.$NEW_MINOR.0"
+      elif [ "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" == "main" ]; then
+        NEW_MAJOR=$((MAJOR + 1))
+        NEW_VERSION="$NEW_MAJOR.0.0"
+      else
+        NEW_PATCH=$((PATCH + 1))
+        NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"
+      fi
+      echo "NEW_VERSION: $NEW_VERSION"
+    - echo "Construction et publication de l'image Docker avec Kaniko..."
+    - /kaniko/executor
+        --context "${CI_PROJECT_DIR}"
+        --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
+        --cache=true
+        --cache-repo $DOCKER_REGISTRY/$APP_NAME:latest
+        --destination $DOCKER_REGISTRY/$APP_NAME:$NEW_VERSION
+        --destination $DOCKER_REGISTRY/$APP_NAME:latest
+    - echo "IMAGE_TAG=${NEW_VERSION}" >> build.env
+  artifacts:
+    reports:
+      dotenv: build.env
+  needs:
+    - job: prepare
+      artifacts: true
+
+.deploy_k8s_template:
+  stage: deploy
+  image:
+    name: bitnami/kubectl:latest
+    entrypoint: [""]
+  before_script:
+    - mkdir -p ~/.kube
+    - cp "$KUBECONFIG" ~/.kube/config
+    - chmod 600 ~/.kube/config
+    - export KUBECONFIG=~/.kube/config
+    # RKE2 API cert does not include the public IP in its SAN, so skip TLS verify
+    - CLUSTER=$(kubectl config view -o jsonpath='{.clusters[0].name}')
+    - kubectl config unset "clusters.${CLUSTER}.certificate-authority-data"
+    - kubectl config set-cluster "${CLUSTER}" --server="https://${MVP_SERVER_IP}:6443" --insecure-skip-tls-verify=true
+  script:
+    - export IMAGE="${DOCKER_REGISTRY}/${APP_NAME}:${IMAGE_TAG}"
+    - export HOST="${SLUG}.${DOMAIN}"
+    - echo "Deploying ${IMAGE} → https://${HOST}"
+    - |
+      for f in k8s/*.yaml; do
+        sed -e "s|__IMAGE__|${IMAGE}|g" \
+            -e "s|__SLUG__|${SLUG}|g" \
+            -e "s|__HOST__|${HOST}|g" \
+            -e "s|__CLUSTER_ISSUER__|${CLUSTER_ISSUER}|g" \
+            "$f" | kubectl apply --validate=false -f -
+      done
+    - kubectl rollout status "deployment/${SLUG}" -n "$KUBE_NAMESPACE" --timeout=180s
+  needs:
+    - job: prepare
+      artifacts: true
+    - job: build-publish
+      artifacts: true
+
+build-publish:
+  extends: .build_publish_template
+  rules:
+    - if: $CI_COMMIT_BRANCH == "develop"
+    - if: $CI_COMMIT_BRANCH == "staging"
+    - if: $CI_COMMIT_BRANCH == "main"
+
+deploy:
+  extends: .deploy_k8s_template
+  rules:
+    - if: $CI_COMMIT_BRANCH == "develop"
+    - if: $CI_COMMIT_BRANCH == "staging"
+    - if: $CI_COMMIT_BRANCH == "main"
+
+# --- Hostinger DNS (owner API token) ---
+
+.update_dns_template:
+  stage: dns
+  image: curlimages/curl:latest
+  script:
+    - export HOST="${SLUG}.${DOMAIN}"
+    - echo "DNS A record ${HOST} -> ${MVP_SERVER_IP}"
+    - |
+      HTTP_CODE=$(curl -s -o /tmp/dns-response.json -w "%{http_code}" -X PUT \
+        -H "Authorization: Bearer ${HOSTINGER_API_TOKEN}" \
+        -H "Content-Type: application/json" \
+        "https://developers.hostinger.com/api/dns/v1/zones/${HOSTINGER_DNS_ZONE}" \
+        -d "{
+          \"overwrite\": false,
+          \"zone\": [{
+            \"name\": \"${SLUG}\",
+            \"type\": \"A\",
+            \"ttl\": 300,
+            \"records\": [{\"content\": \"${MVP_SERVER_IP}\"}]
+          }]
+        }")
+      echo "Hostinger API HTTP ${HTTP_CODE}"
+      cat /tmp/dns-response.json
+      if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+        echo "DNS update failed"
+        exit 1
+      fi
+    - echo "https://${HOST} should resolve to ${MVP_SERVER_IP} (allow a few minutes for propagation)"
+  needs:
+    - job: deploy
+
+update-dns:
+  extends: .update_dns_template
+  rules:
+    - if: $CI_COMMIT_BRANCH == "develop"
+    - if: $CI_COMMIT_BRANCH == "staging"
+    - if: $CI_COMMIT_BRANCH == "main"
+
+# --- Discord (after deploy succeeds) ---
+
+.notify_discord_template:
+  stage: notify
+  image: curlimages/curl:latest
+  script:
+    - export URL="https://${SLUG}.${DOMAIN}"
+    - |
+      if [ -z "${DISCORD_WEBHOOK_URL}" ]; then
+        echo "DISCORD_WEBHOOK_URL not set — skipping Discord notification"
+        exit 0
+      fi
+      printf '%s' "{\"content\":\"✅ MVP **${CI_PROJECT_NAME}** deployed successfully\\n${URL}\"}" > /tmp/discord.json
+      curl -sf -X POST "${DISCORD_WEBHOOK_URL}" \
+        -H "Content-Type: application/json" \
+        -d @/tmp/discord.json
+      echo "Discord notification sent for ${URL}"
+  needs:
+    - job: deploy
+
+notify-discord:
+  extends: .notify_discord_template
+  rules:
+    - if: $CI_COMMIT_BRANCH == "develop"
+    - if: $CI_COMMIT_BRANCH == "staging"
+    - if: $CI_COMMIT_BRANCH == "main"
