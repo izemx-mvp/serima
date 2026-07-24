@@ -46,7 +46,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 
 // Prevent theme FOUC by inlining a bootstrap script before hydration
 const themeBootstrap = `
-(function(){try{var t=localStorage.getItem('serima-theme');var s=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';var r=(t==='dark'||t==='light')?t:s;var d=document.documentElement;if(r==='dark')d.classList.add('dark');d.style.colorScheme=r;}catch(e){}})();
+(function(){try{var t=localStorage.getItem('serima-theme');var r=(t==='dark'||t==='light')?t:'light';var d=document.documentElement;if(r==='dark')d.classList.add('dark');d.style.colorScheme=r;}catch(e){}})();
 `;
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
