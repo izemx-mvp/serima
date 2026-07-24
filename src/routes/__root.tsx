@@ -117,9 +117,10 @@ function RootComponent() {
           <SidebarProvider>
             <div className="min-h-screen flex w-full bg-background text-foreground">
               <AppSidebar />
-              <div className="flex-1 flex flex-col min-w-0">
+              <div className="relative flex-1 flex flex-col min-w-0 app-canvas">
+                <div className="app-canvas-bg" aria-hidden="true" />
                 <TopNav />
-                <main className="flex-1 min-w-0">
+                <main className="relative flex-1 min-w-0">
                   <Outlet />
                 </main>
               </div>
