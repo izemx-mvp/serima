@@ -46,7 +46,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 
 // Prevent theme FOUC by inlining a bootstrap script before hydration
 const themeBootstrap = `
-(function(){try{var t=localStorage.getItem('serima-theme');var s=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';var r=(t==='dark'||t==='light')?t:s;var d=document.documentElement;if(r==='dark')d.classList.add('dark');d.style.colorScheme=r;}catch(e){}})();
+(function(){try{var t=localStorage.getItem('serima-theme');var r=(t==='dark'||t==='light')?t:'light';var d=document.documentElement;if(r==='dark')d.classList.add('dark');d.style.colorScheme=r;}catch(e){}})();
 `;
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
@@ -117,11 +117,14 @@ function RootComponent() {
           <SidebarProvider>
             <div className="min-h-screen flex w-full bg-background text-foreground">
               <AppSidebar />
-              <div className="flex-1 flex flex-col min-w-0">
-                <TopNav />
-                <main className="flex-1 min-w-0">
-                  <Outlet />
-                </main>
+              <div className="relative flex-1 flex flex-col min-w-0 app-canvas">
+                <div className="app-canvas-bg" aria-hidden="true" />
+                <div className="relative z-10 flex flex-1 flex-col min-w-0">
+                  <TopNav />
+                  <main className="flex-1 min-w-0">
+                    <Outlet />
+                  </main>
+                </div>
               </div>
             </div>
             <FloatingAssistant />
