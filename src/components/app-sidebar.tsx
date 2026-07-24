@@ -9,6 +9,7 @@ import {
   FolderOpen,
   AlertTriangle,
   BarChart3,
+  Settings2,
 } from "lucide-react";
 import {
   Sidebar,
@@ -25,6 +26,7 @@ import {
 const items = [
   { title: "Tableau de bord", url: "/", icon: LayoutDashboard },
   { title: "Agents IA", url: "/agents", icon: Bot },
+  { title: "Configuration des agents", url: "/configuration", icon: Settings2 },
   { title: "Demandes clients", url: "/demandes", icon: Inbox },
   { title: "Devis", url: "/devis", icon: FileText },
   { title: "Commandes", url: "/commandes", icon: ShoppingCart },
@@ -33,6 +35,7 @@ const items = [
   { title: "Réclamations", url: "/reclamations", icon: AlertTriangle },
   { title: "Reporting", url: "/reporting", icon: BarChart3 },
 ];
+
 
 export function AppSidebar() {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
