@@ -104,12 +104,17 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border/60">
       <SidebarHeader className="border-b border-sidebar-border/60 h-16 px-3">
-        <Link to="/" className="flex items-center h-full min-w-0 group">
+        <Link to="/" className="flex items-center justify-center h-full min-w-0 group">
           <div className="flex items-center justify-center h-full transition-transform group-hover:scale-[1.02]">
-            <SerimaLogo height={collapsed ? 22 : 30} />
+            {collapsed ? (
+              <SerimaLogo variant="mark" height={26} />
+            ) : (
+              <SerimaLogo height={30} />
+            )}
           </div>
         </Link>
       </SidebarHeader>
+
 
       <SidebarContent className="gap-1 py-2">
         <NavGroup label="Espace de travail" items={workspace} pathname={pathname} />
