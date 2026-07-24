@@ -18,6 +18,7 @@ import { Route as DemandesRouteImport } from './routes/demandes'
 import { Route as CommandesRouteImport } from './routes/commandes'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AgentsIndexRouteImport } from './routes/agents.index'
+import { Route as AgentsIdRouteImport } from './routes/agents.$id'
 
 const StocksRoute = StocksRouteImport.update({
   id: '/stocks',
@@ -64,6 +65,11 @@ const AgentsIndexRoute = AgentsIndexRouteImport.update({
   path: '/agents/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AgentsIdRoute = AgentsIdRouteImport.update({
+  id: '/agents/$id',
+  path: '/agents/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -74,6 +80,7 @@ export interface FileRoutesByFullPath {
   '/reclamations': typeof ReclamationsRoute
   '/reporting': typeof ReportingRoute
   '/stocks': typeof StocksRoute
+  '/agents/$id': typeof AgentsIdRoute
   '/agents/': typeof AgentsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -85,6 +92,7 @@ export interface FileRoutesByTo {
   '/reclamations': typeof ReclamationsRoute
   '/reporting': typeof ReportingRoute
   '/stocks': typeof StocksRoute
+  '/agents/$id': typeof AgentsIdRoute
   '/agents': typeof AgentsIndexRoute
 }
 export interface FileRoutesById {
@@ -97,6 +105,7 @@ export interface FileRoutesById {
   '/reclamations': typeof ReclamationsRoute
   '/reporting': typeof ReportingRoute
   '/stocks': typeof StocksRoute
+  '/agents/$id': typeof AgentsIdRoute
   '/agents/': typeof AgentsIndexRoute
 }
 export interface FileRouteTypes {
@@ -110,6 +119,7 @@ export interface FileRouteTypes {
     | '/reclamations'
     | '/reporting'
     | '/stocks'
+    | '/agents/$id'
     | '/agents/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -121,6 +131,7 @@ export interface FileRouteTypes {
     | '/reclamations'
     | '/reporting'
     | '/stocks'
+    | '/agents/$id'
     | '/agents'
   id:
     | '__root__'
@@ -132,6 +143,7 @@ export interface FileRouteTypes {
     | '/reclamations'
     | '/reporting'
     | '/stocks'
+    | '/agents/$id'
     | '/agents/'
   fileRoutesById: FileRoutesById
 }
@@ -144,6 +156,7 @@ export interface RootRouteChildren {
   ReclamationsRoute: typeof ReclamationsRoute
   ReportingRoute: typeof ReportingRoute
   StocksRoute: typeof StocksRoute
+  AgentsIdRoute: typeof AgentsIdRoute
   AgentsIndexRoute: typeof AgentsIndexRoute
 }
 
@@ -212,6 +225,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AgentsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/agents/$id': {
+      id: '/agents/$id'
+      path: '/agents/$id'
+      fullPath: '/agents/$id'
+      preLoaderRoute: typeof AgentsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -224,6 +244,7 @@ const rootRouteChildren: RootRouteChildren = {
   ReclamationsRoute: ReclamationsRoute,
   ReportingRoute: ReportingRoute,
   StocksRoute: StocksRoute,
+  AgentsIdRoute: AgentsIdRoute,
   AgentsIndexRoute: AgentsIndexRoute,
 }
 export const routeTree = rootRouteImport
