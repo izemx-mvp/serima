@@ -1,3 +1,4 @@
+import type * as React from "react";
 import { createFileRoute, notFound, useRouter } from "@tanstack/react-router";
 import { agents } from "@/lib/mock-data";
 import TechnicoAgent from "@/components/agents/technico";
@@ -12,7 +13,7 @@ import SavAgent from "@/components/agents/sav";
 import ReportingAgent from "@/components/agents/reporting";
 import { Button } from "@/components/ui/button";
 
-const REGISTRY: Record<string, () => JSX.Element> = {
+const REGISTRY: Record<string, React.ComponentType> = {
   technico: TechnicoAgent,
   devis: DevisAgent,
   stocks: StocksAgent,
