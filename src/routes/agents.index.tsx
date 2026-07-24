@@ -1,18 +1,25 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageShell } from "@/components/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Play } from "lucide-react";
+import {
+  Bot, FileText, Package, ShoppingBag, MessageSquare,
+  FileCheck, Users, Truck, AlertTriangle, BarChart3, ArrowRight,
+} from "lucide-react";
 import { agents } from "@/lib/mock-data";
-import { AgentModal } from "@/components/agent-modal";
 
-export const Route = createFileRoute("/agents")({
+const ICONS: Record<string, any> = {
+  technico: Bot, devis: FileText, stocks: Package, achats: ShoppingBag,
+  sc: MessageSquare, doc: FileCheck, prospection: Users, suivi: Truck,
+  sav: AlertTriangle, reporting: BarChart3,
+};
+
+export const Route = createFileRoute("/agents/")({
   head: () => ({
     meta: [
       { title: "Agents IA — SERIMA AI" },
-      { name: "description", content: "10 agents IA spécialisés pour la distribution industrielle SERIMA : technico-commercial, devis, stocks, achats, service client, documentaire, prospection, suivi, SAV, reporting." },
+      { name: "description", content: "10 agents IA spécialisés pour la distribution industrielle SERIMA." },
       { property: "og:title", content: "Agents IA — SERIMA AI" },
       { property: "og:description", content: "10 agents IA spécialisés pour la distribution industrielle." },
     ],
@@ -21,39 +28,36 @@ export const Route = createFileRoute("/agents")({
 });
 
 function AgentsPage() {
-  const [openId, setOpenId] = useState<string | null>(null);
-  const active = agents.find((a) => a.id === openId) ?? null;
-
   return (
-    <PageShell title="Agents IA" description="10 agents spécialisés pour votre activité de distribution industrielle">
+    <PageShell title="Agents IA" description="10 agents spécialisés pour votre activité de distribution industrielle. Chaque agent dispose d'une interface métier dédiée.">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {agents.map((a) => (
-          <Card key={a.id} className="hover:shadow-md transition-shadow">
-            <CardContent className="p-5 space-y-3">
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <h3 className="text-sm font-semibold text-foreground leading-tight">{a.nom}</h3>
-                  <p className="text-xs text-muted-foreground mt-1">{a.fonction}</p>
+        {agents.map((a) => {
+          const Icon = ICONS[a.id] ?? Bot;
+          return (
+            <Card key={a.id} className="hover:shadow-md transition-shadow group">
+              <CardContent className="p-5 space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary/10 text-primary shrink-0">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold text-foreground leading-tight">{a.nom}</h3>
+                      <p className="text-xs text-muted-foreground mt-1">{a.fonction}</p>
+                    </div>
+                  </div>
+                  <Badge className="bg-success text-success-foreground shrink-0 text-[10px]">{a.statut}</Badge>
                 </div>
-                <Badge className="bg-success text-success-foreground shrink-0">{a.statut}</Badge>
-              </div>
-              <div className="flex gap-2 pt-1">
-                <Button size="sm" onClick={() => setOpenId(a.id)}>Ouvrir l'agent</Button>
-                <Button size="sm" variant="outline" onClick={() => setOpenId(a.id)}>
-                  <Play className="h-3.5 w-3.5" /> Démo
+                <Button asChild size="sm" className="w-full group-hover:bg-primary/90">
+                  <Link to="/agents/$id" params={{ id: a.id }}>
+                    Ouvrir l'agent <ArrowRight className="h-3.5 w-3.5" />
+                  </Link>
                 </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
-
-      <AgentModal
-        agentId={openId}
-        open={!!openId}
-        onOpenChange={(o) => !o && setOpenId(null)}
-        title={active?.nom ?? ""}
-      />
     </PageShell>
   );
 }

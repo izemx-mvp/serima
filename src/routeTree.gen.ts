@@ -16,8 +16,8 @@ import { Route as DocumentsRouteImport } from './routes/documents'
 import { Route as DevisRouteImport } from './routes/devis'
 import { Route as DemandesRouteImport } from './routes/demandes'
 import { Route as CommandesRouteImport } from './routes/commandes'
-import { Route as AgentsRouteImport } from './routes/agents'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AgentsIndexRouteImport } from './routes/agents.index'
 
 const StocksRoute = StocksRouteImport.update({
   id: '/stocks',
@@ -54,20 +54,19 @@ const CommandesRoute = CommandesRouteImport.update({
   path: '/commandes',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AgentsRoute = AgentsRouteImport.update({
-  id: '/agents',
-  path: '/agents',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AgentsIndexRoute = AgentsIndexRouteImport.update({
+  id: '/agents/',
+  path: '/agents/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/agents': typeof AgentsRoute
   '/commandes': typeof CommandesRoute
   '/demandes': typeof DemandesRoute
   '/devis': typeof DevisRoute
@@ -75,10 +74,10 @@ export interface FileRoutesByFullPath {
   '/reclamations': typeof ReclamationsRoute
   '/reporting': typeof ReportingRoute
   '/stocks': typeof StocksRoute
+  '/agents/': typeof AgentsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/agents': typeof AgentsRoute
   '/commandes': typeof CommandesRoute
   '/demandes': typeof DemandesRoute
   '/devis': typeof DevisRoute
@@ -86,11 +85,11 @@ export interface FileRoutesByTo {
   '/reclamations': typeof ReclamationsRoute
   '/reporting': typeof ReportingRoute
   '/stocks': typeof StocksRoute
+  '/agents': typeof AgentsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/agents': typeof AgentsRoute
   '/commandes': typeof CommandesRoute
   '/demandes': typeof DemandesRoute
   '/devis': typeof DevisRoute
@@ -98,12 +97,12 @@ export interface FileRoutesById {
   '/reclamations': typeof ReclamationsRoute
   '/reporting': typeof ReportingRoute
   '/stocks': typeof StocksRoute
+  '/agents/': typeof AgentsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/agents'
     | '/commandes'
     | '/demandes'
     | '/devis'
@@ -111,10 +110,10 @@ export interface FileRouteTypes {
     | '/reclamations'
     | '/reporting'
     | '/stocks'
+    | '/agents/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/agents'
     | '/commandes'
     | '/demandes'
     | '/devis'
@@ -122,10 +121,10 @@ export interface FileRouteTypes {
     | '/reclamations'
     | '/reporting'
     | '/stocks'
+    | '/agents'
   id:
     | '__root__'
     | '/'
-    | '/agents'
     | '/commandes'
     | '/demandes'
     | '/devis'
@@ -133,11 +132,11 @@ export interface FileRouteTypes {
     | '/reclamations'
     | '/reporting'
     | '/stocks'
+    | '/agents/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AgentsRoute: typeof AgentsRoute
   CommandesRoute: typeof CommandesRoute
   DemandesRoute: typeof DemandesRoute
   DevisRoute: typeof DevisRoute
@@ -145,6 +144,7 @@ export interface RootRouteChildren {
   ReclamationsRoute: typeof ReclamationsRoute
   ReportingRoute: typeof ReportingRoute
   StocksRoute: typeof StocksRoute
+  AgentsIndexRoute: typeof AgentsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -198,13 +198,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CommandesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/agents': {
-      id: '/agents'
-      path: '/agents'
-      fullPath: '/agents'
-      preLoaderRoute: typeof AgentsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -212,12 +205,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/agents/': {
+      id: '/agents/'
+      path: '/agents'
+      fullPath: '/agents/'
+      preLoaderRoute: typeof AgentsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AgentsRoute: AgentsRoute,
   CommandesRoute: CommandesRoute,
   DemandesRoute: DemandesRoute,
   DevisRoute: DevisRoute,
@@ -225,17 +224,8 @@ const rootRouteChildren: RootRouteChildren = {
   ReclamationsRoute: ReclamationsRoute,
   ReportingRoute: ReportingRoute,
   StocksRoute: StocksRoute,
+  AgentsIndexRoute: AgentsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
