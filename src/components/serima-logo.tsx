@@ -21,15 +21,34 @@ export function SerimaLogo({
   const dark = forceDark ?? resolved === "dark";
   const isMark = variant === "mark";
 
+  if (isMark) {
+    return (
+      <div
+        className={cn("relative mx-auto shrink-0 overflow-hidden", className)}
+        style={{ width: height, height }}
+      >
+        <img
+          src={logoUrl}
+          alt="Sérima"
+          draggable={false}
+          className={cn(
+            "absolute top-1/2 left-1/2 max-w-none -translate-x-[36%] -translate-y-1/2 select-none",
+            dark && "brightness-125 saturate-150",
+          )}
+          style={{ height: height * 1.25, width: "auto" }}
+        />
+      </div>
+    );
+  }
+
   return (
     <img
       src={logoUrl}
       alt="Sérima"
       height={height}
-      style={{ height, width: isMark ? height : "auto" }}
+      style={{ height, width: "auto" }}
       className={cn(
-        "select-none transition-[filter] duration-300",
-        isMark && "object-cover object-left",
+        "mx-auto block select-none transition-[filter] duration-300",
         dark && "brightness-125 saturate-150",
         className,
       )}

@@ -103,18 +103,9 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border/60">
-      <SidebarHeader className="border-b border-sidebar-border/60 h-16 px-3 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:overflow-hidden">
-        <Link
-          to="/"
-          className="flex items-center justify-center h-full min-w-0 overflow-hidden group-data-[collapsible=icon]:w-full"
-        >
-          <div className="flex items-center justify-center min-w-0 transition-transform group-hover:scale-[1.02]">
-            {collapsed ? (
-              <SerimaLogo variant="mark" height={28} className="shrink-0" />
-            ) : (
-              <SerimaLogo height={30} className="max-w-full" />
-            )}
-          </div>
+      <SidebarHeader className="border-b border-sidebar-border/60 flex h-16 items-center justify-center px-3 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-0">
+        <Link to="/" className="flex h-full w-full items-center justify-center">
+          <SerimaLogo variant={collapsed ? "mark" : "full"} height={collapsed ? 28 : 30} />
         </Link>
       </SidebarHeader>
 

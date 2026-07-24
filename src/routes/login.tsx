@@ -53,7 +53,7 @@ function LoginPage() {
         {/* Left: form */}
         <div className="flex items-center justify-center p-6 md:p-12">
           <div className="w-full max-w-md animate-fade-up">
-            <div className="mb-8 flex items-center">
+            <div className="mb-8 flex justify-center">
               <SerimaLogo height={44} />
             </div>
 
