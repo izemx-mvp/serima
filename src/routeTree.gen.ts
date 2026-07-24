@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as StocksRouteImport } from './routes/stocks'
 import { Route as ReportingRouteImport } from './routes/reporting'
 import { Route as ReclamationsRouteImport } from './routes/reclamations'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as DocumentsRouteImport } from './routes/documents'
 import { Route as DevisRouteImport } from './routes/devis'
 import { Route as DemandesRouteImport } from './routes/demandes'
@@ -34,6 +35,11 @@ const ReportingRoute = ReportingRouteImport.update({
 const ReclamationsRoute = ReclamationsRouteImport.update({
   id: '/reclamations',
   path: '/reclamations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DocumentsRoute = DocumentsRouteImport.update({
@@ -84,6 +90,7 @@ export interface FileRoutesByFullPath {
   '/demandes': typeof DemandesRoute
   '/devis': typeof DevisRoute
   '/documents': typeof DocumentsRoute
+  '/login': typeof LoginRoute
   '/reclamations': typeof ReclamationsRoute
   '/reporting': typeof ReportingRoute
   '/stocks': typeof StocksRoute
@@ -97,6 +104,7 @@ export interface FileRoutesByTo {
   '/demandes': typeof DemandesRoute
   '/devis': typeof DevisRoute
   '/documents': typeof DocumentsRoute
+  '/login': typeof LoginRoute
   '/reclamations': typeof ReclamationsRoute
   '/reporting': typeof ReportingRoute
   '/stocks': typeof StocksRoute
@@ -111,6 +119,7 @@ export interface FileRoutesById {
   '/demandes': typeof DemandesRoute
   '/devis': typeof DevisRoute
   '/documents': typeof DocumentsRoute
+  '/login': typeof LoginRoute
   '/reclamations': typeof ReclamationsRoute
   '/reporting': typeof ReportingRoute
   '/stocks': typeof StocksRoute
@@ -126,6 +135,7 @@ export interface FileRouteTypes {
     | '/demandes'
     | '/devis'
     | '/documents'
+    | '/login'
     | '/reclamations'
     | '/reporting'
     | '/stocks'
@@ -139,6 +149,7 @@ export interface FileRouteTypes {
     | '/demandes'
     | '/devis'
     | '/documents'
+    | '/login'
     | '/reclamations'
     | '/reporting'
     | '/stocks'
@@ -152,6 +163,7 @@ export interface FileRouteTypes {
     | '/demandes'
     | '/devis'
     | '/documents'
+    | '/login'
     | '/reclamations'
     | '/reporting'
     | '/stocks'
@@ -166,6 +178,7 @@ export interface RootRouteChildren {
   DemandesRoute: typeof DemandesRoute
   DevisRoute: typeof DevisRoute
   DocumentsRoute: typeof DocumentsRoute
+  LoginRoute: typeof LoginRoute
   ReclamationsRoute: typeof ReclamationsRoute
   ReportingRoute: typeof ReportingRoute
   StocksRoute: typeof StocksRoute
@@ -194,6 +207,13 @@ declare module '@tanstack/react-router' {
       path: '/reclamations'
       fullPath: '/reclamations'
       preLoaderRoute: typeof ReclamationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/documents': {
@@ -262,6 +282,7 @@ const rootRouteChildren: RootRouteChildren = {
   DemandesRoute: DemandesRoute,
   DevisRoute: DevisRoute,
   DocumentsRoute: DocumentsRoute,
+  LoginRoute: LoginRoute,
   ReclamationsRoute: ReclamationsRoute,
   ReportingRoute: ReportingRoute,
   StocksRoute: StocksRoute,
