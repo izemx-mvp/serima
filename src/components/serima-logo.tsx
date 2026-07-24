@@ -1,4 +1,4 @@
-import logoAsset from "@/assets/serima-logo.png.asset.json";
+import logoUrl from "@/assets/serima-logo-wordmark.png";
 import markAsset from "@/assets/serima-mark.png.asset.json";
 import { useTheme } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
@@ -20,7 +20,7 @@ export function SerimaLogo({
 }) {
   const { resolved } = useTheme();
   const dark = forceDark ?? resolved === "dark";
-  const src = variant === "mark" ? markAsset.url : logoAsset.url;
+  const src = variant === "mark" ? markAsset.url : logoUrl;
   return (
     <img
       src={src}
