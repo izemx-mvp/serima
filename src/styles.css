@@ -135,9 +135,10 @@
   --success-foreground: oklch(0.14 0.03 155);
   --warning: oklch(0.80 0.15 75);
   --warning-foreground: oklch(0.22 0.04 258);
-  --border: oklch(0.28 0.012 250 / 0.6);
-  --input: oklch(0.28 0.012 250);
+  --border: oklch(0.32 0.014 250);
+  --input: oklch(0.30 0.014 250);
   --ring: oklch(0.72 0.17 148);
+
   --chart-1: oklch(0.72 0.17 148);
   --chart-2: oklch(0.68 0.14 205);
   --chart-3: oklch(0.78 0.15 75);
