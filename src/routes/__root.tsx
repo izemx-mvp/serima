@@ -3,6 +3,7 @@ import {
   Outlet,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -10,10 +11,12 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { FloatingAssistant } from "@/components/floating-assistant";
 import { Toaster } from "@/components/ui/sonner";
+import { ThemeProvider } from "@/components/theme-provider";
+import { TopNav } from "@/components/top-nav";
 
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
@@ -41,29 +44,42 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   );
 }
 
+// Prevent theme FOUC by inlining a bootstrap script before hydration
+const themeBootstrap = `
+(function(){try{var t=localStorage.getItem('serima-theme');var s=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';var r=(t==='dark'||t==='light')?t:s;var d=document.documentElement;if(r==='dark')d.classList.add('dark');d.style.colorScheme=r;}catch(e){}})();
+`;
+
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "SERIMA AI — Plateforme d'agents IA industriels" },
+      { title: "Sérima — Plateforme d'agents IA industriels" },
       {
         name: "description",
         content:
-          "Démonstration de la plateforme SERIMA AI : 10 agents IA spécialisés pour la distribution d'aciers, inox, tubes, plastiques et outillage.",
+          "Sérima : plateforme d'agents IA pour la distribution d'aciers, inox, tubes, plastiques et outillage professionnel au Maroc.",
       },
-      { property: "og:title", content: "SERIMA AI — Plateforme d'agents IA industriels" },
+      { property: "og:title", content: "Sérima — Plateforme d'agents IA industriels" },
       {
         property: "og:description",
         content: "10 agents IA spécialisés pour la distribution industrielle.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "theme-color", content: "#159a3a" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", type: "image/png", href: "/favicon.png" },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap",
+      },
     ],
+    scripts: [{ children: themeBootstrap }],
   }),
   shellComponent: RootShell,
   component: RootComponent,
@@ -86,31 +102,33 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const pathname = useRouterState({ select: (r) => r.location.pathname });
+  const isAuthRoute = pathname === "/login";
+
   return (
     <QueryClientProvider client={queryClient}>
-      <SidebarProvider>
-        <div className="min-h-screen flex w-full bg-background">
-          <AppSidebar />
-          <div className="flex-1 flex flex-col min-w-0">
-            <header className="h-14 flex items-center justify-between border-b bg-card px-4 sticky top-0 z-30">
-              <div className="flex items-center gap-3">
-                <SidebarTrigger />
-                <div className="text-sm text-muted-foreground hidden sm:block">
-                  SERIMA AI · Distribution industrielle
-                </div>
+      <ThemeProvider>
+        {isAuthRoute ? (
+          <>
+            <Outlet />
+            <Toaster />
+          </>
+        ) : (
+          <SidebarProvider>
+            <div className="min-h-screen flex w-full bg-background text-foreground">
+              <AppSidebar />
+              <div className="flex-1 flex flex-col min-w-0">
+                <TopNav />
+                <main className="flex-1 min-w-0">
+                  <Outlet />
+                </main>
               </div>
-              <div className="text-[10px] px-2 py-1 rounded bg-accent text-accent-foreground border">
-                MVP de démonstration — données fictives
-              </div>
-            </header>
-            <main className="flex-1 min-w-0">
-              <Outlet />
-            </main>
-          </div>
-        </div>
-        <FloatingAssistant />
-        <Toaster />
-      </SidebarProvider>
+            </div>
+            <FloatingAssistant />
+            <Toaster />
+          </SidebarProvider>
+        )}
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
